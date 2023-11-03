@@ -3,13 +3,12 @@ package vsb;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 
 public class DBConnector {
-    private  String url;
-    private  String user;
-    private  String password;
+    private  final String url;
+    private  final String user;
+    private  final String password;
     private Connection connection;
 
     public DBConnector()
@@ -20,13 +19,13 @@ public class DBConnector {
         connection = null;
     }
 
-    public void insert(String s)
+    public void insert(String treePath)
     {
         try {
             connection = DriverManager.getConnection(url, user, password);
-            String sql = "INSERT INTO paths (path) VALUES (?)";
+            var sql = "INSERT INTO paths (path) VALUES (?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, s);
+            preparedStatement.setString(1, treePath);
             preparedStatement.executeUpdate();
             preparedStatement.close();
         } catch (SQLException e) {
