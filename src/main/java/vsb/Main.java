@@ -15,6 +15,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
         DBConnector dbConnector = new DBConnector();
+        MyCustomVisitor visitor = new MyCustomVisitor();
         String sqlString = scanner.nextLine(); // scans input sql command from user
 
         while(!sqlString.equals("quit"))
@@ -30,7 +31,8 @@ public class Main {
             // begin parsing at root rule
             ParseTree tree = parser.root();
             // insert returned tree into database
-            dbConnector.insert(tree.toStringTree(parser));
+            //dbConnector.insert(tree.toStringTree(parser));
+            visitor.visit(tree);
             // scans input sql command from user
             sqlString = scanner.nextLine();
         }
