@@ -8,7 +8,14 @@ import org.antlr.v4.runtime.tree.*;
 import vsb.DBConnector;
 
 public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
+
     private final DBConnector dbConnector = new DBConnector();
+    private int sqlId;
+
+    public MyCustomVisitor(int sqlId)
+    {
+        this.sqlId = sqlId;
+    }
 
     @Override
     public Void visit(ParseTree tree) {
@@ -19,12 +26,19 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
     private void collectPath(ParseTree tree, List<String> path, String parentText) {
         String currentText = tree.getText();
 
-        if (!currentText.equals(parentText) ) {
-            path.add(currentText);
+        if (!currentText.isEmpty() && !currentText.equals(parentText) ) {
+            int termId = dbConnector.insertTermIfNotExists(currentText);
+            if (termId != -1) {
+                path.add(Integer.toString(termId));
+            }
         }
 
         if (tree.getChildCount() == 0 && path.size() > 1) {
-            dbConnector.insertPath(new ArrayList<>(path));
+            String pathStr = String.join("/", path);
+            int pathId = dbConnector.insertPath(pathStr);
+            if (pathId != -1 && sqlId != -1) {
+                dbConnector.linkPathToSQL(pathId, sqlId);
+            }
         }
 
         for (int i = 0; i < tree.getChildCount(); i++) {
