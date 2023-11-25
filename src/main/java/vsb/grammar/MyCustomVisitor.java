@@ -3,6 +3,7 @@ package vsb.grammar;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.*;
 import vsb.DBConnector;
@@ -19,17 +20,25 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
 
     @Override
     public Void visit(ParseTree tree) {
-        collectPath(tree, new ArrayList<>(), "");
+        collectPath(tree, new ArrayList<>());
         return super.visit(tree);
     }
 
-    private void collectPath(ParseTree tree, List<String> path, String parentText) {
-        String currentText = tree.getText();
+    private void collectPath(ParseTree tree, List<String> path) {
+        if (tree instanceof ParserRuleContext ctx) {
+            String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Získání názvu pravidla
 
-        if (!currentText.isEmpty() && !currentText.equals(parentText) ) {
-            int termId = dbConnector.insertTermIfNotExists(currentText);
-            if (termId != -1) {
-                path.add(Integer.toString(termId));
+            int ruleId = dbConnector.insertTermIfNotExists(ruleName);
+            if (ruleId != -1) {
+                path.add(Integer.toString(ruleId));
+            }
+        } else if (tree instanceof TerminalNode) { // Kontrola, zda je uzel terminál
+            Token token = ((TerminalNode) tree).getSymbol();
+            if (token.getType() != Token.EOF) {
+                int tokenId = dbConnector.insertTermIfNotExists(token.getText());
+                if (tokenId != -1) {
+                    path.add(Integer.toString(tokenId));
+                }
             }
         }
 
@@ -39,11 +48,12 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
             if (pathId != -1 && sqlId != -1) {
                 dbConnector.linkPathToSQL(pathId, sqlId);
             }
-        }
-
-        for (int i = 0; i < tree.getChildCount(); i++) {
-            collectPath(tree.getChild(i), new ArrayList<>(path), currentText);
+        } else {
+            for (int i = 0; i < tree.getChildCount(); i++) {
+                collectPath(tree.getChild(i), new ArrayList<>(path));
+            }
         }
     }
+
 
 }

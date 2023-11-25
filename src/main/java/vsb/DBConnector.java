@@ -97,7 +97,7 @@ public class DBConnector {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // nebo vhodnější způsob indikace, že cesta nebyla nalezena
+        return -1;
     }
 
     public int getSQLId(String sqlText) {
