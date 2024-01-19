@@ -1,8 +1,12 @@
 package vsb;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class DBConnector {
     private  final String url;
     private  final String user;
@@ -150,6 +154,46 @@ public class DBConnector {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<String> getPathsById(int sqlId) {
+        List<String> paths = new ArrayList<>();
+
+        String sql = "SELECT path_index.path FROM path_index " +
+                "INNER JOIN path_sql ON path_index.id = path_sql.p_id " +
+                "WHERE path_sql.s_id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, sqlId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    paths.add(resultSet.getString("path"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return paths;
+    }
+
+    public List<String> getAllSqlCommands() {
+        List<String> sqlCommands = new ArrayList<>();
+
+        String sql = "SELECT sql_text FROM sql_statement";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    sqlCommands.add(resultSet.getString("sql_text"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sqlCommands;
     }
 
 }
