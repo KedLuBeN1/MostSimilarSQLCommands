@@ -1,4 +1,4 @@
-package restAPI;
+package vsb.restAPI;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

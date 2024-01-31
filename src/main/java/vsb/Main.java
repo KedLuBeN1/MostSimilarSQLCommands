@@ -12,11 +12,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-//@ComponentScan(basePackages = {"vsb", "restAPI"})
+//@ComponentScan(basePackages = {"vsb", "vsb.restAPI"})
 public class Main {
     public static void main(String[] args) {
 
-        int choice = 1;
+        int choice = 2;
 
         if(choice == 0)
         {
@@ -24,6 +24,7 @@ public class Main {
             System.out.println("Enter sql commands: ");
 
             Scanner scanner = new Scanner(System.in);
+            System.out.println("choice vytvari dbconnector");
             DBConnector dbConnector = new DBConnector();
             String sqlString = scanner.nextLine(); // scans input sql command from user
 
@@ -49,6 +50,7 @@ public class Main {
         else if(choice == 1)
         {
             Scanner scanner = new Scanner(System.in);
+            System.out.println("choice vytvari dbconnector");
             DBConnector dbConnector = new DBConnector();
 
             System.out.println("Enter sql id 1: ");
@@ -62,10 +64,6 @@ public class Main {
             System.out.println("Jaccard similarity: " + JaccardSimilarity.calculateJaccardSimilarity(paths1, paths2));
         }
         else if (choice == 2) {
-            var dbConnector = new DBConnector();
-            for(var sqlCommand : dbConnector.getAllSqlCommands()){
-                System.out.println(sqlCommand);
-            }
             SpringApplication.run(Main.class, args);
         }
         else {

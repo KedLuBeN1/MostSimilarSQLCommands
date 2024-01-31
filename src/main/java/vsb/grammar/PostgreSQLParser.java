@@ -931,6 +931,7 @@ public class PostgreSQLParser extends PostgreSQLParserBase {
 			}
 		}
 		catch (RecognitionException re) {
+            System.out.println("parser: Invalid SQL command.");
 			_localctx.exception = re;
 			_errHandler.reportError(this, re);
 			_errHandler.recover(this, re);

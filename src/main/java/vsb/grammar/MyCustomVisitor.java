@@ -15,6 +15,7 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
 
     public MyCustomVisitor(int sqlId)
     {
+        System.out.println("choice vytvari dbconnector");
         this.sqlId = sqlId;
     }
 

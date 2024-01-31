@@ -8,16 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DBConnector {
-    private  final String url;
-    private  final String user;
-    private  final String password;
     private Connection connection;
 
     public DBConnector()
     {
-        url = "jdbc:postgresql://dbsys.cs.vsb.cz:5432/JUR0396";
-        user = "JUR0396";
-        password = "Z63Vuxpb6GjW442o";
+        System.out.println("Nekdo me vytvoril");
+        String url = "jdbc:postgresql://dbsys.cs.vsb.cz:5432/JUR0396";
+        String user = "JUR0396";
+        String password = "Z63Vuxpb6GjW442o";
         connection = null;
         try {
             connection = DriverManager.getConnection(url, user, password);

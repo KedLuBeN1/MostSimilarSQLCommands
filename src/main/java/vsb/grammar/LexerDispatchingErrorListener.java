@@ -17,6 +17,7 @@ public class LexerDispatchingErrorListener implements ANTLRErrorListener
 
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
     {
+        System.out.println("LexersyntaxError: Invalid SQL command.");
         var foo = new ProxyErrorListener(_parent.getErrorListeners());
         foo.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
     }
@@ -29,6 +30,7 @@ public class LexerDispatchingErrorListener implements ANTLRErrorListener
                                 BitSet ambigAlts,
                                 ATNConfigSet configs)
     {
+        System.out.println("reportAmbiguity: Invalid SQL command.");
         var foo = new ProxyErrorListener(_parent.getErrorListeners());
         foo.reportAmbiguity(recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs);
     }
@@ -40,6 +42,7 @@ public class LexerDispatchingErrorListener implements ANTLRErrorListener
                                             BitSet conflictingAlts,
                                             ATNConfigSet configs)
     {
+        System.out.println("reportAttemptingFullContext: Invalid SQL command.");
         var foo = new ProxyErrorListener(_parent.getErrorListeners());
         foo.reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs);
     }
@@ -51,6 +54,7 @@ public class LexerDispatchingErrorListener implements ANTLRErrorListener
                                          int prediction,
                                          ATNConfigSet configs)
     {
+        System.out.println("reportContextSensitivity: Invalid SQL command.");
         var foo = new ProxyErrorListener(_parent.getErrorListeners());
         foo.reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs);
     }

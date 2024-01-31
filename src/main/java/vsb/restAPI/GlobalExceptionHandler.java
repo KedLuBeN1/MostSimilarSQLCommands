@@ -1,4 +1,4 @@
-package restAPI;
+package vsb.restAPI;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
