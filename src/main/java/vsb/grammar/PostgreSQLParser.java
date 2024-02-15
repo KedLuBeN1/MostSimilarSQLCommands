@@ -935,6 +935,7 @@ public class PostgreSQLParser extends PostgreSQLParserBase {
 			_localctx.exception = re;
 			_errHandler.reportError(this, re);
 			_errHandler.recover(this, re);
+            throw re;
 		}
 		finally {
 			exitRule();

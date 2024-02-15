@@ -5,6 +5,11 @@ options { tokenVocab = PostgreSQLLexer;
 superClass = PostgreSQLParserBase;
 }
 
+@rulecatch {
+   catch (RecognitionException e) {
+    throw e;
+   }
+}
 
 @header
 {
@@ -4162,7 +4167,7 @@ collabel
    ;
 
 identifier
-   : Identifier opt_uescape
+   :Identifier opt_uescape
    | QuotedIdentifier
    | UnicodeQuotedIdentifier
    | plsqlvariablename

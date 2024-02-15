@@ -6,7 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.*;
-import vsb.DBConnector;
+import vsb.database.DBConnector;
 
 public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
 

@@ -47,7 +47,11 @@ options {
  */
 }
 //
-
+@rulecatch {
+   catch (RecognitionException e) {
+    throw e;
+   }
+}
 // SPECIAL CHARACTERS (4.1.4)
 
 //

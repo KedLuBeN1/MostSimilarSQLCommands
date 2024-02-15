@@ -1,10 +1,11 @@
-package vsb;
+package vsb.database;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
+import vsb.model.SqlStatement;
 
 @Component
 public class DBConnector {
@@ -12,7 +13,6 @@ public class DBConnector {
 
     public DBConnector()
     {
-        System.out.println("Nekdo me vytvoril");
         String url = "jdbc:postgresql://dbsys.cs.vsb.cz:5432/JUR0396";
         String user = "JUR0396";
         String password = "Z63Vuxpb6GjW442o";
@@ -22,6 +22,18 @@ public class DBConnector {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        connection.setAutoCommit(autoCommit);
+    }
+
+    public void commit() throws SQLException {
+        connection.commit();
+    }
+
+    public void rollback() throws SQLException {
+        connection.rollback();
     }
 
     public void insertUniquePath(String path) {
@@ -75,6 +87,34 @@ public class DBConnector {
         String insertSql = "INSERT INTO sql_statement (sql_text) VALUES (?) RETURNING id";
         try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
             insertStmt.setString(1, sqlStatement);
+            ResultSet rs = insertStmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    public int insertSQLStatement(String sqlStatement, int questionId) {
+        String selectSql = "SELECT id FROM sql_statement WHERE sql_text = ? AND question_id = ?";
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+            selectStmt.setString(1, sqlStatement);
+            selectStmt.setInt(2, questionId);
+            ResultSet rs = selectStmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String insertSql = "INSERT INTO sql_statement (sql_text, question_id) VALUES (?, ?) RETURNING id";
+        try (PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
+            insertStmt.setString(1, sqlStatement);
+            insertStmt.setInt(2, questionId);
             ResultSet rs = insertStmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt("id");
@@ -143,6 +183,21 @@ public class DBConnector {
         return -1;
     }
 
+    public int getTerm(String term) {
+        String selectSql = "SELECT id FROM term_index WHERE term = ?";
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+            selectStmt.setString(1, term);
+            ResultSet rs = selectStmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
     public void linkPathToSQL(int pathId, int sqlId) {
         String insertSql = "INSERT INTO path_sql (p_id, s_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
         try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
@@ -194,4 +249,51 @@ public class DBConnector {
         return sqlCommands;
     }
 
+    public List<Integer> getAllSqlIds() {
+        List<Integer> sqlIds = new ArrayList<>();
+        String selectSql = "SELECT id FROM sql_statement";
+
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+            ResultSet rs = selectStmt.executeQuery();
+
+            while (rs.next()) {
+                sqlIds.add(rs.getInt("id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sqlIds;
+    }
+
+    public List<SqlStatement> getSqlStatements() {
+        List<SqlStatement> sqlStatements = new ArrayList<>();
+        String selectSql = "SELECT id, sql_text" +
+                ", question_id FROM sql_statement";
+
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+            ResultSet rs = selectStmt.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String sqlStatement = rs.getString("sql_text");
+                int questionId = rs.getInt("question_id");
+
+                SqlStatement info = new SqlStatement(id, sqlStatement, questionId);
+                sqlStatements.add(info);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sqlStatements;
+    }
+
+    public void insertPaths(List<String> paths, int sqlId)
+    {
+        for (String path : paths) {
+            int pathId = insertPath(path);
+            linkPathToSQL(pathId, sqlId);
+        }
+    }
 }
