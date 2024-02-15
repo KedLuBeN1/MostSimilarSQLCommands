@@ -890,6 +890,7 @@ public class PostgreSQLParser extends PostgreSQLParserBase {
 
 	public PostgreSQLParser(TokenStream input) {
 		super(input);
+        setErrorHandler(new BailErrorStrategy());
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
