@@ -1,5 +1,6 @@
 package vsb.grammar;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +22,15 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
 
     @Override
     public Void visit(ParseTree tree) {
-        collectPath(tree, new ArrayList<>());
+        try {
+            collectPath(tree, new ArrayList<>());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return super.visit(tree);
     }
 
-    private void collectPath(ParseTree tree, List<String> path) {
+    private void collectPath(ParseTree tree, List<String> path) throws SQLException {
         if (tree instanceof ParserRuleContext ctx) {
             String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Získání názvu pravidla
 

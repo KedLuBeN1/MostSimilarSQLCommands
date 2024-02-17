@@ -46,7 +46,7 @@ public class DBConnector {
         }
     }
 
-    public int insertPath(String path) {
+    public int insertPath(String path) throws SQLException {
         String selectSql = "SELECT id FROM path_index WHERE path = ?";
         try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
             selectStmt.setString(1, path);
@@ -56,6 +56,7 @@ public class DBConnector {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
 
         String insertSql = "INSERT INTO path_index (path) VALUES (?) RETURNING id";
@@ -67,6 +68,7 @@ public class DBConnector {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
 
         return -1;
@@ -98,7 +100,7 @@ public class DBConnector {
         return -1;
     }
 
-    public int insertSQLStatement(String sqlStatement, int questionId) {
+    public int insertSQLStatement(String sqlStatement, int questionId) throws SQLException {
         String selectSql = "SELECT id FROM sql_statement WHERE sql_text = ? AND question_id = ?";
         try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
             selectStmt.setString(1, sqlStatement);
@@ -109,6 +111,7 @@ public class DBConnector {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
 
         String insertSql = "INSERT INTO sql_statement (sql_text, question_id) VALUES (?, ?) RETURNING id";
@@ -121,6 +124,7 @@ public class DBConnector {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
 
         return -1;
@@ -198,7 +202,7 @@ public class DBConnector {
         return -1;
     }
 
-    public void linkPathToSQL(int pathId, int sqlId) {
+    public void linkPathToSQL(int pathId, int sqlId) throws SQLException {
         String insertSql = "INSERT INTO path_sql (p_id, s_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
         try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
             stmt.setInt(1, pathId);
@@ -206,6 +210,7 @@ public class DBConnector {
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
     }
 
@@ -289,8 +294,7 @@ public class DBConnector {
         return sqlStatements;
     }
 
-    public void insertPaths(List<String> paths, int sqlId)
-    {
+    public void insertPaths(List<String> paths, int sqlId) throws SQLException {
         for (String path : paths) {
             int pathId = insertPath(path);
             linkPathToSQL(pathId, sqlId);
