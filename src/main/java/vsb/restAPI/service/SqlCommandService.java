@@ -28,6 +28,8 @@ public class SqlCommandService {
     public void insertSQLStatement(String sqlString, int questionId) throws SQLException {
         try {
             dbConnector.setAutoCommit(false);
+            long startTime = System.currentTimeMillis();
+            System.out.println("Creating parsing tree: ");
             // create a char stream from sql command
             CharStream input = CharStreams.fromString(sqlString);
             // create a lexer that feeds off of input CharStream
@@ -44,14 +46,31 @@ public class SqlCommandService {
             // begin parsing at root rule
             ParseTree tree = parser.root();
 
+            long endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Creating parsing tree): " + (endTime - startTime) + "ms");
+
             // insert sql command into database
+            System.out.println("   Inserting SQL command into database: " + sqlString);
+            startTime = System.currentTimeMillis();
             int sqlId = dbConnector.insertSQLStatement(sqlString, questionId);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Inserting SQL command into database): " + (endTime - startTime) + "ms");
             // insert returned tree into database
+
+            System.out.println("getting paths");
+            startTime = System.currentTimeMillis();
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
 
             var paths = visitor.collectPaths(tree);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
 
+
+            System.out.println("Inserting paths into database");
+            startTime = System.currentTimeMillis();
             dbConnector.insertPaths(paths, sqlId);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Inserting paths into database): " + (endTime - startTime) + "ms");
 
             dbConnector.commit();
         } catch (Exception e) {

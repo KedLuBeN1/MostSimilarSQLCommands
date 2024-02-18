@@ -24,13 +24,15 @@ public class MyCustomVisitorNDB extends PostgreSQLParserBaseVisitor<Void> {
     private void collectPath(ParseTree tree, List<String> path, List<String> paths) {
         if (tree instanceof ParserRuleContext ctx) {
             String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Získání názvu pravidla
-            int ruleId = dbConnector.getTerm(ruleName);
-            path.add(Integer.toString(ruleId));
+            int ruleId = dbConnector.insertTermIfNotExists(ruleName.toLowerCase());
+            if(ruleId != -1)
+                path.add(Integer.toString(ruleId));
         } else if (tree instanceof TerminalNode) { // Kontrola, zda je uzel terminál
             Token token = ((TerminalNode) tree).getSymbol();
             if (token.getType() != Token.EOF) {
-                int tokenId = dbConnector.getTerm(token.getText());
-                path.add(Integer.toString(tokenId));
+                int tokenId = dbConnector.insertTermIfNotExists(token.getText().toLowerCase());
+                if(tokenId != -1)
+                    path.add(Integer.toString(tokenId));
             }
         }
 

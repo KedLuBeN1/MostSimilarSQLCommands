@@ -47,7 +47,11 @@ public class SqlCommandController {
             return ResponseEntity.badRequest().body("SQL command cannot be empty.");
         }
         try {
+            long startTime = System.currentTimeMillis();
+            System.out.println("Sending SQL command: " + sqlQuery);
             sqlCommandService.insertSQLStatement(sqlQuery, intValue);
+            long endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed: " + (endTime - startTime) + "ms");
         } catch (StackOverflowError e) {
             return ResponseEntity.badRequest().body("Invalid SQL command or processing error.");
         } catch (RecognitionException e) {

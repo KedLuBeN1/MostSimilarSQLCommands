@@ -21,10 +21,12 @@ public class RestClient {
         try {
             SqlStatements sqlStatements = XmlReader.readXml(xmlFile);
 
-            int i = 0;
             for (Statement sqlCommand : sqlStatements.getStatementList()) {
-                if(i++ > 10) break;
+                long startTime = System.currentTimeMillis();
+                System.out.println("Sending SQL command: " + sqlCommand.getValue());
                 sendPostRequest(sqlCommand, "user", "password");
+                long endTime = System.currentTimeMillis();
+                System.out.println("Time elapsed: " + (endTime - startTime) + "ms");
             }
         } catch (Exception e) {
             e.printStackTrace();
