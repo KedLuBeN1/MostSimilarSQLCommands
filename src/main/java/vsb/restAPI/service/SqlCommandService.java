@@ -25,8 +25,7 @@ public class SqlCommandService {
         this.dbConnector = dbConnector;
     }
 
-    public void insertSQLStatement(String sqlString, int questionId)
-    {
+    public void insertSQLStatement(String sqlString, int questionId) throws SQLException {
         try {
             dbConnector.setAutoCommit(false);
             // create a char stream from sql command
@@ -38,9 +37,9 @@ public class SqlCommandService {
             // create a parser that feeds off the tokens buffer
             PostgreSQLParser parser = new PostgreSQLParser(tokens);
 
-            parser.removeErrorListeners();
-            parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-            parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+            //parser.removeErrorListeners();
+            //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
+            //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
             // begin parsing at root rule
             ParseTree tree = parser.root();
@@ -62,6 +61,7 @@ public class SqlCommandService {
             } catch (SQLException rollbackException) {
                 rollbackException.printStackTrace();
             }
+            throw e;
         } finally {
             try {
                 dbConnector.setAutoCommit(true);
@@ -83,9 +83,9 @@ public class SqlCommandService {
         // create a parser that feeds off the tokens buffer
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
 
-        parser.removeErrorListeners();
+        //parser.removeErrorListeners();
         //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-        parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+        //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
         try {
             // begin parsing at root rule
