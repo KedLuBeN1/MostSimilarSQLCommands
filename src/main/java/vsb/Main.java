@@ -24,7 +24,7 @@ import javax.xml.bind.JAXBException;
 public class Main {
     public static void main(String[] args){
 
-        int choice = 2;
+        int choice = 3;
 
         if(choice == 0)
         {
@@ -87,15 +87,31 @@ public class Main {
             SpringApplication.run(Main.class, args);
         }
         else if (choice == 3) {
+            Scanner scanner = new Scanner(System.in);
 
-            File xmlFile = new File("final_correct.xml");
+            System.out.println("Enter path of xml file to scan from:");
+
+            var path = scanner.nextLine();
+
+            File xmlFile = new File(path);
+
+            if(!xmlFile.exists())
+            {
+                System.out.println("File does not exist");
+                return;
+            }
+
             try {
                 SqlStatements sqlStatements = XmlReader.readXml(xmlFile);
                 SqlCommandService sqlCommandService = new SqlCommandService(new DBConnector());
 
                 for(Statement sql : sqlStatements.getStatementList())
                 {
-                    sqlCommandService.insertSQLStatement(sql.getValue(), sql.getId());
+                    try {
+                        sqlCommandService.insertSQLStatement(sql.getValue(), sql.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
             } catch (Exception e) {
