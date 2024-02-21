@@ -24,7 +24,7 @@ import javax.xml.bind.JAXBException;
 public class Main {
     public static void main(String[] args){
 
-        int choice = 3;
+        int choice = 2;
 
         if(choice == 0)
         {

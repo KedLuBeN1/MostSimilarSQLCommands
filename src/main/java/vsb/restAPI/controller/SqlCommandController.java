@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import vsb.model.SqlStatement;
 import vsb.restAPI.service.SqlCommandService;
+import vsb.xml.model.Statement;
 
 import java.util.List;
 import java.util.Map;
@@ -72,19 +73,20 @@ public class SqlCommandController {
             return ResponseEntity.badRequest().body("SQL command cannot be empty.");
         }
 
-        var result = sqlCommandService.findSimilarSQLStatements(sqlQuery);
+        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatements(sqlQuery);
 
-        if(result.isEmpty()) {
+        if(similarStatements.isEmpty()) {
             return ResponseEntity.ok("No similar SQL commands found.");
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayNode jsonResult = objectMapper.createArrayNode();
 
-        for (SqlStatement sqlStatement : result) {
+        for (Map.Entry<SqlStatement, Double> sqlStatement : similarStatements) {
             ObjectNode statementNode = objectMapper.createObjectNode();
-            statementNode.put("questionId", sqlStatement.getQuestionId());
-            statementNode.put("sqlStatement", sqlStatement.getSqlStatement());
+            statementNode.put("questionId", sqlStatement.getKey().getQuestionId());
+            statementNode.put("sqlStatement", sqlStatement.getKey().getSqlStatement());
+            statementNode.put("similarity", sqlStatement.getValue());
             jsonResult.add(statementNode);
         }
 

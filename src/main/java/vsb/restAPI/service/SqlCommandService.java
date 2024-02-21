@@ -3,9 +3,9 @@ package vsb.restAPI.service;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import vsb.database.DBConnector;
 import vsb.JaccardSimilarity;
@@ -13,8 +13,7 @@ import vsb.grammar.*;
 import vsb.model.SqlStatement;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SqlCommandService {
@@ -90,8 +89,8 @@ public class SqlCommandService {
         }
     }
 
-    public List<SqlStatement> findSimilarSQLStatements(String sqlString) {
-        List<SqlStatement> similarStatements = new ArrayList<>();
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(String sqlString) {
+        List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
 
         // create a char stream from sql command
         CharStream  input = CharStreams.fromString(sqlString);
@@ -121,13 +120,18 @@ public class SqlCommandService {
                 var jaccardSimilarity = JaccardSimilarity.calculateJaccardSimilarity(sqlPaths, dbPaths);
 
                 if (jaccardSimilarity > 0.5) {
-                    similarStatements.add(sqlStatement);
+                    similarStatements.add(new AbstractMap.SimpleEntry<>(sqlStatement, jaccardSimilarity));
                 }
             }
+
+            similarStatements.sort(Collections.reverseOrder(Map.Entry.comparingByValue()));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return similarStatements;
+        int numberOfElementsToRetrieve = Math.min(20, similarStatements.size());
+
+        return similarStatements.subList(0, numberOfElementsToRetrieve);
     }
 }
