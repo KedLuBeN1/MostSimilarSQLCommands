@@ -1,8 +1,10 @@
 package vsb.database;
 
 import java.sql.*;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 import vsb.model.SqlStatement;
@@ -293,6 +295,41 @@ public class DBConnector {
 
         return sqlStatements;
     }
+
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(List<String> inputPaths) {
+        List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
+
+        String selectSql = "SELECT s.id, s.sql_text, s.question_id, jaccard_similarity(p.paths, ?::text[]) AS similarity " +
+                "FROM sql_statement s " +
+                "JOIN path_sql ps ON s.id = ps.s_id " +
+                "JOIN path_index p ON ps.p_id = p.id " +
+                "ORDER BY similarity DESC " +
+                "LIMIT 20";
+
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+            Array pathsArray = connection.createArrayOf("text", inputPaths.toArray());
+            selectStmt.setArray(1, pathsArray);
+
+            ResultSet rs = selectStmt.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String sql_text = rs.getString("sql_text");
+                int questionId = rs.getInt("question_id");
+                double similarity = rs.getDouble("similarity");
+
+                SqlStatement sqlStatement = new SqlStatement(id, sql_text, questionId);
+
+                similarStatements.add(new AbstractMap.SimpleEntry<>(sqlStatement, similarity));
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return similarStatements;
+    }
+
 
     public void insertPaths(List<String> paths, int sqlId) throws SQLException {
         for (String path : paths) {
