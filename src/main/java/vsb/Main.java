@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.*;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.List;
 
@@ -32,7 +33,6 @@ public class Main {
             System.out.println("Enter sql commands: ");
 
             Scanner scanner = new Scanner(System.in);
-            System.out.println("choice vytvari dbconnector");
             DBConnector dbConnector = new DBConnector();
             String sqlString = scanner.nextLine(); // scans input sql command from user
 
@@ -47,16 +47,16 @@ public class Main {
                 // create a parser that feeds off the tokens buffer
                 PostgreSQLParser parser = new PostgreSQLParser(tokens);
 
-                parser.removeErrorListeners();
+                //parser.removeErrorListeners();
                 //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-                parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+                //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
                 // begin parsing at root rule
                 try{
                     ParseTree tree = parser.root();
                     // insert returned tree into database
-                    MyCustomVisitor visitor = new MyCustomVisitor(dbConnector.insertSQLStatement(sqlString));
-                    visitor.visit(tree);
+                    MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
+                    visitor.collectPaths(tree);
                 } catch (RecognitionException e) {
                     System.out.println("Invalid SQL command.");
                 } catch (Exception e) {
@@ -69,17 +69,20 @@ public class Main {
         }
         else if(choice == 1)
         {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("choice vytvari dbconnector");
-            DBConnector dbConnector = new DBConnector();
 
-            System.out.println("Enter sql id 1: ");
-            var sqlId1 = scanner.nextInt();
-            System.out.println("Enter sql id 2: ");
-            var sqlId2 = scanner.nextInt();
 
-            var paths1 = dbConnector.getPathsById(sqlId1);
-            var paths2 = dbConnector.getPathsById(sqlId2);
+            List<String> paths1 = new ArrayList<String>() {{
+                add("cesta1");
+                add("cesta2");
+                add("cesta2");
+                add("cesta2");
+                add("cesta3");
+            }};
+            List<String> paths2 = new ArrayList<String>() {{
+                add("cesta1");
+                add("cesta2");
+                add("cesta3");
+            }};
 
             System.out.println("Jaccard similarity: " + JaccardSimilarity.calculateJaccardSimilarity(paths1, paths2));
         }

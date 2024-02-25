@@ -73,7 +73,7 @@ public class SqlCommandController {
             return ResponseEntity.badRequest().body("SQL command cannot be empty.");
         }
 
-        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatements(sqlQuery);
+        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatementsInDB(sqlQuery);
 
         if(similarStatements.isEmpty()) {
             return ResponseEntity.ok("No similar SQL commands found.");

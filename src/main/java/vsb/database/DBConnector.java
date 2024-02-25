@@ -296,40 +296,33 @@ public class DBConnector {
         return sqlStatements;
     }
 
-    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(List<String> inputPaths) {
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(List<String> inputPaths) throws SQLException {
         List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
 
-        String selectSql = "SELECT s.id, s.sql_text, s.question_id, jaccard_similarity(p.paths, ?::text[]) AS similarity " +
-                "FROM sql_statement s " +
-                "JOIN path_sql ps ON s.id = ps.s_id " +
-                "JOIN path_index p ON ps.p_id = p.id " +
-                "ORDER BY similarity DESC " +
-                "LIMIT 20";
+        String findFuncSql = "SELECT * FROM find_similar_sql_statements(?)";
 
-        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
-            Array pathsArray = connection.createArrayOf("text", inputPaths.toArray());
-            selectStmt.setArray(1, pathsArray);
+        try (PreparedStatement stmt = connection.prepareStatement(findFuncSql)) {
+            Array inputPathsArray = connection.createArrayOf("text", inputPaths.toArray());
+            stmt.setArray(1, inputPathsArray);
 
-            ResultSet rs = selectStmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String sql_text = rs.getString("sql_text");
+                int sqlId = rs.getInt("sql_id");
+                String sqlText = rs.getString("sql_text");
                 int questionId = rs.getInt("question_id");
                 double similarity = rs.getDouble("similarity");
 
-                SqlStatement sqlStatement = new SqlStatement(id, sql_text, questionId);
-
+                SqlStatement sqlStatement = new SqlStatement(sqlId, sqlText, questionId);
                 similarStatements.add(new AbstractMap.SimpleEntry<>(sqlStatement, similarity));
-
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
 
         return similarStatements;
     }
-
 
     public void insertPaths(List<String> paths, int sqlId) throws SQLException {
         for (String path : paths) {

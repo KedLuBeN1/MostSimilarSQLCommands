@@ -134,4 +134,35 @@ public class SqlCommandService {
 
         return similarStatements.subList(0, numberOfElementsToRetrieve);
     }
+
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString) {
+
+        // create a char stream from sql command
+        CharStream  input = CharStreams.fromString(sqlString);
+        // create a lexer that feeds off of input CharStream
+        PostgreSQLLexer lexer = new PostgreSQLLexer(input);
+        // create a buffer of tokens pulled from the lexer
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        // create a parser that feeds off the tokens buffer
+        PostgreSQLParser parser = new PostgreSQLParser(tokens);
+
+        //parser.removeErrorListeners();
+        //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
+        //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+
+        try {
+            // begin parsing at root rule
+            ParseTree tree = parser.root();
+            // insert returned tree into database
+            MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
+            var sqlPaths = visitor.collectPaths(tree);
+
+            return dbConnector.findSimilarSQLStatements(sqlPaths);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
+    }
 }

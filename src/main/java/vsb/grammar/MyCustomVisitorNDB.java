@@ -23,22 +23,25 @@ public class MyCustomVisitorNDB extends PostgreSQLParserBaseVisitor<Void> {
 
     private void collectPath(ParseTree tree, List<String> path, List<String> paths) {
         if (tree instanceof ParserRuleContext ctx) {
-            String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Získání názvu pravidla
+            String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()];
             int ruleId = dbConnector.insertTermIfNotExists(ruleName.toLowerCase());
             if(ruleId != -1)
                 path.add(Integer.toString(ruleId));
-        } else if (tree instanceof TerminalNode) { // Kontrola, zda je uzel terminál
+            //System.out.print(ruleName + "/");
+        } else if (tree instanceof TerminalNode) {
             Token token = ((TerminalNode) tree).getSymbol();
             if (token.getType() != Token.EOF) {
                 int tokenId = dbConnector.insertTermIfNotExists(token.getText().toLowerCase());
                 if(tokenId != -1)
                     path.add(Integer.toString(tokenId));
+                //System.out.print(token.getText() + "/");
             }
         }
 
         if (tree.getChildCount() == 0 && path.size() > 1) {
             String pathStr = String.join("/", path);
             paths.add(pathStr);
+            //System.out.println();
         } else {
             for (int i = 0; i < tree.getChildCount(); i++) {
                 collectPath(tree.getChild(i), new ArrayList<>(path), paths);

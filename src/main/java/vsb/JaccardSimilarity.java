@@ -13,11 +13,15 @@ public class JaccardSimilarity {
         Set<String> intersection = new HashSet<>(set1);
         intersection.retainAll(set2);
 
+        System.out.println("Intersection: " + intersection);
+
         Set<String> union = new HashSet<>(set1);
         union.addAll(set2);
 
+        System.out.println("Union: " + union);
+
         if (union.isEmpty()) {
-            return 0.0; // Vyhneme se dělení nulou
+            return 0.0;
         }
 
         return (double) intersection.size() / union.size();
