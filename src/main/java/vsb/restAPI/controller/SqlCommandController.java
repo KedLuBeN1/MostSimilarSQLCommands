@@ -68,12 +68,13 @@ public class SqlCommandController {
     @PostMapping("/processSql")
     public ResponseEntity<String> processSql(@RequestBody Map<String, String> sqlRequest) {
         String sqlQuery = sqlRequest.get("sqlQuery");
+        boolean useIdentifiers = sqlRequest.get("useIdentifiers").equals("true");;
 
         if(sqlQuery == null || sqlQuery.isEmpty()) {
             return ResponseEntity.badRequest().body("SQL command cannot be empty.");
         }
 
-        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatementsInDB(sqlQuery);
+        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatementsInDB(sqlQuery, useIdentifiers);
 
         if(similarStatements.isEmpty()) {
             return ResponseEntity.ok("No similar SQL commands found.");

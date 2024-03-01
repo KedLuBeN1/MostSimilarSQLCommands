@@ -60,7 +60,7 @@ public class SqlCommandService {
             startTime = System.currentTimeMillis();
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
 
-            var paths = visitor.collectPaths(tree);
+            var paths = visitor.collectPaths(tree, true);
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
 
@@ -89,6 +89,51 @@ public class SqlCommandService {
         }
     }
 
+    public void insertSQLStatementDB(String sqlString, int questionId) throws SQLException {
+        try {
+
+            long startTime = System.currentTimeMillis();
+            System.out.println("Creating parsing tree: ");
+            // create a char stream from sql command
+            CharStream input = CharStreams.fromString(sqlString);
+            // create a lexer that feeds off of input CharStream
+            PostgreSQLLexer lexer = new PostgreSQLLexer(input);
+            // create a buffer of tokens pulled from the lexer
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            // create a parser that feeds off the tokens buffer
+            PostgreSQLParser parser = new PostgreSQLParser(tokens);
+
+            //parser.removeErrorListeners();
+            //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
+            //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+
+            // begin parsing at root rule
+            ParseTree tree = parser.root();
+
+            long endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Creating parsing tree): " + (endTime - startTime) + "ms");
+
+            System.out.println("getting paths");
+            startTime = System.currentTimeMillis();
+            MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
+
+            var paths = visitor.collectPaths(tree, true);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
+
+
+            System.out.println("Inserting paths into database");
+            startTime = System.currentTimeMillis();
+            dbConnector.insertData(sqlString, paths, questionId);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Inserting paths into database): " + (endTime - startTime) + "ms");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(String sqlString) {
         List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
 
@@ -110,7 +155,7 @@ public class SqlCommandService {
             ParseTree tree = parser.root();
             // insert returned tree into database
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
-            var sqlPaths = visitor.collectPaths(tree);
+            var sqlPaths = visitor.collectPaths(tree, true);
 
             var allSqlStatements = dbConnector.getSqlStatements();
 
@@ -135,7 +180,7 @@ public class SqlCommandService {
         return similarStatements.subList(0, numberOfElementsToRetrieve);
     }
 
-    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString) {
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString, boolean useIdentifiers) {
 
         // create a char stream from sql command
         CharStream  input = CharStreams.fromString(sqlString);
@@ -155,9 +200,9 @@ public class SqlCommandService {
             ParseTree tree = parser.root();
             // insert returned tree into database
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
-            var sqlPaths = visitor.collectPaths(tree);
+            var sqlPaths = visitor.collectPaths(tree, useIdentifiers);
 
-            return dbConnector.findSimilarSQLStatements(sqlPaths);
+            return dbConnector.findSimilarSQLStatements(sqlPaths, useIdentifiers);
 
         } catch (Exception e) {
             e.printStackTrace();

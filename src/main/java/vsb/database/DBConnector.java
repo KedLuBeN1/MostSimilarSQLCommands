@@ -216,6 +216,18 @@ public class DBConnector {
         }
     }
 
+    public void linkPathNIToSQL(int pathId, int sqlId) throws SQLException {
+        String insertSql = "INSERT INTO path_sql_ni (p_id, s_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
+        try (PreparedStatement stmt = connection.prepareStatement(insertSql)) {
+            stmt.setInt(1, pathId);
+            stmt.setInt(2, sqlId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     public List<String> getPathsById(int sqlId) {
         List<String> paths = new ArrayList<>();
 
@@ -296,10 +308,14 @@ public class DBConnector {
         return sqlStatements;
     }
 
-    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(List<String> inputPaths) throws SQLException {
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(List<String> inputPaths, boolean useIdentifiers) throws SQLException {
         List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
+        String findFuncSql;
 
-        String findFuncSql = "SELECT * FROM find_similar_sql_statements(?)";
+        if(useIdentifiers)
+            findFuncSql = "SELECT * FROM find_similar_sql_statements(?)";
+        else
+            findFuncSql = "SELECT * FROM find_similar_sql_statements_ni(?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(findFuncSql)) {
             Array inputPathsArray = connection.createArrayOf("text", inputPaths.toArray());
@@ -328,6 +344,23 @@ public class DBConnector {
         for (String path : paths) {
             int pathId = insertPath(path);
             linkPathToSQL(pathId, sqlId);
+        }
+    }
+
+    public void insertPathsNI(List<String> paths, int sqlId) throws SQLException {
+        for (String path : paths) {
+            int pathId = insertPath(path);
+            linkPathNIToSQL(pathId, sqlId);
+        }
+    }
+
+    public void insertData(String sqlCommand, List<String> paths, int questionId) throws SQLException {
+        try (CallableStatement callableStatement = connection.prepareCall("{call insert_data(?, ?, ?)}")) {
+            callableStatement.setString(1, sqlCommand);
+            callableStatement.setArray(2, connection.createArrayOf("text", paths.toArray()));
+            callableStatement.setInt(3, questionId);
+
+            callableStatement.execute();
         }
     }
 }

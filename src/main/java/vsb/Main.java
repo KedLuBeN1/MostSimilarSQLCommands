@@ -25,7 +25,7 @@ import javax.xml.bind.JAXBException;
 public class Main {
     public static void main(String[] args){
 
-        int choice = 2;
+        int choice = 3;
 
         if(choice == 0)
         {
@@ -56,7 +56,7 @@ public class Main {
                     ParseTree tree = parser.root();
                     // insert returned tree into database
                     MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
-                    visitor.collectPaths(tree);
+                    visitor.collectPaths(tree, true);
                 } catch (RecognitionException e) {
                     System.out.println("Invalid SQL command.");
                 } catch (Exception e) {
@@ -69,8 +69,6 @@ public class Main {
         }
         else if(choice == 1)
         {
-
-
             List<String> paths1 = new ArrayList<String>() {{
                 add("cesta1");
                 add("cesta2");
@@ -110,8 +108,13 @@ public class Main {
 
                 for(Statement sql : sqlStatements.getStatementList())
                 {
+                    int cnt = sql.getValue().replaceAll("\\s", "").length();
+
+                    if(cnt > 320){
+                        continue;
+                    }
                     try {
-                        sqlCommandService.insertSQLStatement(sql.getValue(), sql.getId());
+                        sqlCommandService.insertSQLStatementDB(sql.getValue(), sql.getId());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -151,7 +154,7 @@ public class Main {
                     ParseTree tree = parser.root();
                     // insert returned tree into database
                     MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
-                    var list = visitor.collectPaths(tree);
+                    var list = visitor.collectPaths(tree, true);
 
                     List<Integer> allSqlIds = dbConnector.getAllSqlIds();
                     int i = 0;
