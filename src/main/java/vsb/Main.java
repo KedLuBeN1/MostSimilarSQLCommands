@@ -174,6 +174,61 @@ public class Main {
                 sqlString = scanner.nextLine();
             }
         }
+        else if (choice == 5) {
+            System.out.println("Write 'quit' to stop");
+            System.out.println("Enter sql commands: ");
+
+            Scanner scanner = new Scanner(System.in);
+            DBConnector dbConnector = new DBConnector();
+
+            String sqlString = scanner.nextLine(); // scans input sql command from user
+
+            while(!sqlString.equals("quit"))
+            {
+                // create a char stream from sql command
+                CharStream  input = CharStreams.fromString(sqlString);
+                // create a lexer that feeds off of input CharStream
+                PostgreSQLLexer lexer = new PostgreSQLLexer(input);
+                // create a buffer of tokens pulled from the lexer
+                CommonTokenStream tokens = new CommonTokenStream(lexer);
+                // create a parser that feeds off the tokens buffer
+                PostgreSQLParser parser = new PostgreSQLParser(tokens);
+
+                //parser.removeErrorListeners();
+                //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
+                //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
+
+                // begin parsing at root rule
+                try {
+                    ParseTree tree = parser.root();
+                    // insert returned tree into database
+                    System.out.println("getting paths");
+                    var startTime = System.currentTimeMillis();
+                    MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
+                    var list = visitor.collectPaths(tree, true);
+                    var endTime = System.currentTimeMillis();
+                    System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
+
+                    System.out.println("converting paths to ids");
+                    startTime = System.currentTimeMillis();
+                    var dad = dbConnector.convertPathsToIds(list);
+                    endTime = System.currentTimeMillis();
+                    System.out.println("Time elapsed(converting paths to ids): " + (endTime - startTime) + "ms");
+
+                    for(String path : dad)
+                    {
+                        System.out.println(path);
+                    }
+                }catch (RecognitionException e) {
+                    System.out.println("controller: Invalid SQL command.");
+                    return; // Přerušení zpracování v případě chyby
+                } catch (Exception e) {
+                    System.out.println("Failed to insert SQL command.");
+                }
+                // scans input sql command from user
+                sqlString = scanner.nextLine();
+            }
+        }
         else {
             System.out.println("Wrong choice");
         }

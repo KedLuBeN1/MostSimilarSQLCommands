@@ -121,10 +121,15 @@ public class SqlCommandService {
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
 
+            System.out.println("Convering paths to ids");
+            startTime = System.currentTimeMillis();
+            var list = dbConnector.convertPathsToIds(paths);
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Convering paths to ids): " + (endTime - startTime) + "ms");
 
             System.out.println("Inserting paths into database");
             startTime = System.currentTimeMillis();
-            dbConnector.insertData(sqlString, paths, questionId);
+            dbConnector.insertData(sqlString, list, questionId);
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(Inserting paths into database): " + (endTime - startTime) + "ms");
 

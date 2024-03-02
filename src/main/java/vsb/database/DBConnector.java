@@ -355,12 +355,45 @@ public class DBConnector {
     }
 
     public void insertData(String sqlCommand, List<String> paths, int questionId) throws SQLException {
-        try (CallableStatement callableStatement = connection.prepareCall("{call insert_data(?, ?, ?)}")) {
-            callableStatement.setString(1, sqlCommand);
-            callableStatement.setArray(2, connection.createArrayOf("text", paths.toArray()));
-            callableStatement.setInt(3, questionId);
+        try {
+            connection.setAutoCommit(false);
+            try (CallableStatement callableStatement = connection.prepareCall("{call insert_data(?, ?, ?)}")) {
+                callableStatement.setString(1, sqlCommand);
+                callableStatement.setArray(2, connection.createArrayOf("text", paths.toArray()));
+                callableStatement.setInt(3, questionId);
 
-            callableStatement.execute();
+                callableStatement.execute();
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
         }
     }
+
+    public List<String> convertPathsToIds(List<String> paths) throws SQLException {
+
+        String selectSql = "SELECT convert_paths_to_ids(?) AS result";
+
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+
+            selectStmt.setArray(1, connection.createArrayOf("text", paths.toArray()));
+
+            ResultSet rs = selectStmt.executeQuery();
+
+            try (ResultSet resultSet = selectStmt.executeQuery()) {
+                if (resultSet.next()) {
+                    String[] resultArray = (String[]) resultSet.getArray("result").getArray();
+                    return List.of(resultArray);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }
