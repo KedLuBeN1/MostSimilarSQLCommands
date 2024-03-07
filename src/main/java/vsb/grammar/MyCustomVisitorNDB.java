@@ -92,16 +92,18 @@ public class MyCustomVisitorNDB extends PostgreSQLParserBaseVisitor<Void> {
     private void collectPathNI(ParseTree tree, List<String> path) {
         if (tree instanceof ParserRuleContext ctx) {
             String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()];
-            int ruleId = dbConnector.insertTermIfNotExists(ruleName.toLowerCase());
-            if(ruleId != -1)
-                path.add(Integer.toString(ruleId));
+            //int ruleId = dbConnector.insertTermIfNotExists(ruleName.toLowerCase());
+            //if(ruleId != -1)
+               // path.add(Integer.toString(ruleId));
+            path.add(ruleName.toLowerCase());
             //System.out.print(ruleName + "/");
         } else if (tree instanceof TerminalNode) {
             Token token = ((TerminalNode) tree).getSymbol();
             if (token.getType() != Token.EOF && token.getType() != PostgreSQLLexer.Identifier){
-                int tokenId = dbConnector.insertTermIfNotExists(token.getText().toLowerCase());
-                if(tokenId != -1)
-                    path.add(Integer.toString(tokenId));
+                //int tokenId = dbConnector.insertTermIfNotExists(token.getText().toLowerCase());
+                //if(tokenId != -1)
+                    //path.add(Integer.toString(tokenId));
+                path.add(token.getText().toLowerCase());
                 //System.out.print(token.getText() + "/");
             }
         }

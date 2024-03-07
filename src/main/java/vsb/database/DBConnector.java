@@ -38,6 +38,12 @@ public class DBConnector {
         connection.rollback();
     }
 
+    public void close() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
+        }
+    }
+
     public void insertUniquePath(String path) {
         String sql = "INSERT INTO path_index (path) VALUES (?) ON CONFLICT (path) DO NOTHING";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -354,10 +360,18 @@ public class DBConnector {
         }
     }
 
-    public void insertData(String sqlCommand, List<String> paths, int questionId) throws SQLException {
+    public void insertData(String sqlCommand, List<String> paths, int questionId, boolean useIdentifiers) throws SQLException {
+
+        String sqlCall;
+
+        if(useIdentifiers)
+            sqlCall = "{call insert_data(?, ?, ?)}";
+        else
+            sqlCall = "{call insert_data_ni(?, ?, ?)}";
+
         try {
             connection.setAutoCommit(false);
-            try (CallableStatement callableStatement = connection.prepareCall("{call insert_data(?, ?, ?)}")) {
+            try (CallableStatement callableStatement = connection.prepareCall(sqlCall)) {
                 callableStatement.setString(1, sqlCommand);
                 callableStatement.setArray(2, connection.createArrayOf("text", paths.toArray()));
                 callableStatement.setInt(3, questionId);

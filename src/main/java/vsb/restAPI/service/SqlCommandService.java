@@ -89,7 +89,7 @@ public class SqlCommandService {
         }
     }
 
-    public void insertSQLStatementDB(String sqlString, int questionId) throws SQLException {
+    public void insertSQLStatementDB(String sqlString, int questionId, boolean useIdentifiers) throws SQLException {
         try {
 
             long startTime = System.currentTimeMillis();
@@ -117,7 +117,7 @@ public class SqlCommandService {
             startTime = System.currentTimeMillis();
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
 
-            var paths = visitor.collectPaths(tree, true);
+            var paths = visitor.collectPaths(tree, useIdentifiers);
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
 
@@ -129,7 +129,7 @@ public class SqlCommandService {
 
             System.out.println("Inserting paths into database");
             startTime = System.currentTimeMillis();
-            dbConnector.insertData(sqlString, list, questionId);
+            dbConnector.insertData(sqlString, list, questionId, useIdentifiers);
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(Inserting paths into database): " + (endTime - startTime) + "ms");
 
@@ -207,7 +207,9 @@ public class SqlCommandService {
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
             var sqlPaths = visitor.collectPaths(tree, useIdentifiers);
 
-            return dbConnector.findSimilarSQLStatements(sqlPaths, useIdentifiers);
+            var sqlPathsIds = dbConnector.convertPathsToIds(sqlPaths);
+
+            return dbConnector.findSimilarSQLStatements(sqlPathsIds, useIdentifiers);
 
         } catch (Exception e) {
             e.printStackTrace();
