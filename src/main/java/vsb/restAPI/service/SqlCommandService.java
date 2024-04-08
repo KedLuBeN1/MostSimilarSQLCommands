@@ -3,6 +3,7 @@ package vsb.restAPI.service;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import org.springframework.data.util.Pair;
@@ -123,7 +124,7 @@ public class SqlCommandService {
 
             System.out.println("Convering paths to ids");
             startTime = System.currentTimeMillis();
-            var list = dbConnector.convertPathsToIds(paths);
+            var list = dbConnector.convertNewPathsToIds(paths);
             endTime = System.currentTimeMillis();
             System.out.println("Time elapsed(Convering paths to ids): " + (endTime - startTime) + "ms");
 
@@ -185,10 +186,10 @@ public class SqlCommandService {
         return similarStatements.subList(0, numberOfElementsToRetrieve);
     }
 
-    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString, boolean useIdentifiers) {
+    public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString, boolean useIdentifiers) throws Exception {
 
         // create a char stream from sql command
-        CharStream  input = CharStreams.fromString(sqlString);
+        CharStream input = CharStreams.fromString(sqlString);
         // create a lexer that feeds off of input CharStream
         PostgreSQLLexer lexer = new PostgreSQLLexer(input);
         // create a buffer of tokens pulled from the lexer
@@ -200,10 +201,10 @@ public class SqlCommandService {
         //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
         //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
+        // begin parsing at root rule
+        ParseTree tree = parser.root();
+
         try {
-            // begin parsing at root rule
-            ParseTree tree = parser.root();
-            // insert returned tree into database
             MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
             var sqlPaths = visitor.collectPaths(tree, useIdentifiers);
 

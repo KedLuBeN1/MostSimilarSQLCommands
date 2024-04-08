@@ -327,8 +327,15 @@ public class DBConnector {
             Array inputPathsArray = connection.createArrayOf("text", inputPaths.toArray());
             stmt.setArray(1, inputPathsArray);
 
+            var startTime = System.currentTimeMillis();
+            System.out.println("Executing find_similar_sql_statements");
             ResultSet rs = stmt.executeQuery();
 
+            var endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Executing find_similar_sql_statements): " + (endTime - startTime) + "ms");
+
+            startTime = System.currentTimeMillis();
+            System.out.println("Processing results");
             while (rs.next()) {
                 int sqlId = rs.getInt("sql_id");
                 String sqlText = rs.getString("sql_text");
@@ -338,6 +345,8 @@ public class DBConnector {
                 SqlStatement sqlStatement = new SqlStatement(sqlId, sqlText, questionId);
                 similarStatements.add(new AbstractMap.SimpleEntry<>(sqlStatement, similarity));
             }
+            endTime = System.currentTimeMillis();
+            System.out.println("Time elapsed(Processing results): " + (endTime - startTime) + "ms");
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -385,6 +394,28 @@ public class DBConnector {
         } finally {
             connection.setAutoCommit(true);
         }
+    }
+    public List<String> convertNewPathsToIds(List<String> paths) throws SQLException {
+
+        String selectSql = "SELECT convert_new_paths_to_ids(?) AS result";
+
+        try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
+
+            selectStmt.setArray(1, connection.createArrayOf("text", paths.toArray()));
+
+            ResultSet rs = selectStmt.executeQuery();
+
+            try (ResultSet resultSet = selectStmt.executeQuery()) {
+                if (resultSet.next()) {
+                    String[] resultArray = (String[]) resultSet.getArray("result").getArray();
+                    return List.of(resultArray);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public List<String> convertPathsToIds(List<String> paths) throws SQLException {

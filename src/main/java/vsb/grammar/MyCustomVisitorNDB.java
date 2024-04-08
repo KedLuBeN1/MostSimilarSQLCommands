@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.*;
 import vsb.database.DBConnector;
 
-public class MyCustomVisitorNDB extends PostgreSQLParserBaseVisitor<Void> {
+public class MyCustomVisitorNDB extends PostgreSQLParserBaseVisitor<Void>{
 
     private final DBConnector dbConnector = new DBConnector();
     private int sqlId;

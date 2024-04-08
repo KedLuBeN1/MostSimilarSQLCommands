@@ -1,6 +1,5 @@
 parser grammar PostgreSQLParser;
 
-
 options { tokenVocab = PostgreSQLLexer;
 superClass = PostgreSQLParserBase;
 }

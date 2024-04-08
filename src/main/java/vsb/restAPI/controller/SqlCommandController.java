@@ -36,6 +36,8 @@ public class SqlCommandController {
 
         String sqlQuery = request.get("sqlQuery");
         String questionId = request.get("id");
+        boolean useIdentifiers = request.get("useIdentifiers").equals("true");;
+
         int intValue = 0;
 
         try {
@@ -50,7 +52,7 @@ public class SqlCommandController {
         try {
             long startTime = System.currentTimeMillis();
             System.out.println("Sending SQL command: " + sqlQuery);
-            sqlCommandService.insertSQLStatement(sqlQuery, intValue);
+            sqlCommandService.insertSQLStatementDB(sqlQuery, intValue, useIdentifiers);
             long endTime = System.currentTimeMillis();
             System.out.println("Time elapsed: " + (endTime - startTime) + "ms");
         } catch (StackOverflowError e) {
@@ -74,7 +76,15 @@ public class SqlCommandController {
             return ResponseEntity.badRequest().body("SQL command cannot be empty.");
         }
 
-        List<Map.Entry<SqlStatement, Double>> similarStatements = sqlCommandService.findSimilarSQLStatementsInDB(sqlQuery, useIdentifiers);
+        List<Map.Entry<SqlStatement, Double>> similarStatements;
+
+        try {
+            similarStatements = sqlCommandService.findSimilarSQLStatementsInDB(sqlQuery, useIdentifiers);
+        }
+        catch (Exception e) {
+            System.out.println("controller: Invalid SQL command.");
+            return ResponseEntity.badRequest().body("Invalid SQL command.");
+        }
 
         if(similarStatements.isEmpty()) {
             return ResponseEntity.ok("No similar SQL commands found.");

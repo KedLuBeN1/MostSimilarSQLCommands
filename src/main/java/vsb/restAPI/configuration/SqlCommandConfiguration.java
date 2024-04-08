@@ -15,6 +15,8 @@ public class SqlCommandConfiguration {
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:63344");
         config.addAllowedOrigin("http://localhost:63343");
+        config.addAllowedOrigin("http://localhost:63345");
+        config.addAllowedOrigin("http://localhost:8000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
