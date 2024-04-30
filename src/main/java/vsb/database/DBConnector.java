@@ -13,8 +13,7 @@ import vsb.model.SqlStatement;
 public class DBConnector {
     private Connection connection;
 
-    public DBConnector()
-    {
+    public DBConnector() {
         String url = "jdbc:postgresql://dbsys.cs.vsb.cz:5432/JUR0396";
         String user = "JUR0396";
         String password = "Z63Vuxpb6GjW442o";
@@ -318,7 +317,7 @@ public class DBConnector {
         List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
         String findFuncSql;
 
-        if(useIdentifiers)
+        if (useIdentifiers)
             findFuncSql = "SELECT * FROM find_similar_sql_statements(?)";
         else
             findFuncSql = "SELECT * FROM find_similar_sql_statements_ni(?)";
@@ -373,7 +372,7 @@ public class DBConnector {
 
         String sqlCall;
 
-        if(useIdentifiers)
+        if (useIdentifiers)
             sqlCall = "{call insert_data(?, ?, ?)}";
         else
             sqlCall = "{call insert_data_ni(?, ?, ?)}";
@@ -395,6 +394,7 @@ public class DBConnector {
             connection.setAutoCommit(true);
         }
     }
+
     public List<String> convertNewPathsToIds(List<String> paths) throws SQLException {
 
         String selectSql = "SELECT convert_new_paths_to_ids(?) AS result";

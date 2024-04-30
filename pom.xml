@@ -107,7 +107,6 @@
                 <configuration>
                     <arguments>
                         <argument>-visitor</argument>
-                        <!-- Add other ANTLR options here if needed -->
                     </arguments>
                     <sourceDirectory>${project.basedir}/grammar</sourceDirectory>
                     <outputDirectory>${project.basedir}/src/main/java/vsb/grammar</outputDirectory>

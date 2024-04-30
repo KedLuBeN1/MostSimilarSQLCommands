@@ -29,7 +29,7 @@ public class SqlCommandController {
         this.sqlCommandService = sqlCommandService;
     }
 
-
+    // endpoint for inserting SQL commands to the database
     @PostMapping("/insertSql")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> insertSqlCommand(@RequestBody Map<String, String> request) {
@@ -44,6 +44,7 @@ public class SqlCommandController {
             intValue = Integer.parseInt(questionId);
         } catch (NumberFormatException e) {
             System.out.println("Error: The string is not a valid integer.");
+            return ResponseEntity.badRequest().body("Invalid question ID.");
         }
 
         if(sqlQuery == null || sqlQuery.isEmpty()) {
@@ -67,6 +68,7 @@ public class SqlCommandController {
         return ResponseEntity.ok("SQL command successfully inserted to database.");
     }
 
+    // endpoint for processing SQL commands, then finding similar SQL commands in the database
     @PostMapping("/processSql")
     public ResponseEntity<String> processSql(@RequestBody Map<String, String> sqlRequest) {
         String sqlQuery = sqlRequest.get("sqlQuery");

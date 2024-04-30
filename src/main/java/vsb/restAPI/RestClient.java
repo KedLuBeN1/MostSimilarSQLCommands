@@ -1,6 +1,5 @@
 package vsb.restAPI;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import vsb.xml.XmlReader;
 import vsb.xml.model.SqlStatements;
 import vsb.xml.model.Statement;
@@ -12,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Base64;
 
+// This class was used to test the REST API endpoints. It doesn t have any use in the final project.
 public class RestClient {
     private static final String REST_API_URL = "http://localhost:8080/insertSql";
 

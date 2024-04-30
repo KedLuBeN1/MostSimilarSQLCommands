@@ -25,71 +25,6 @@ public class SqlCommandService {
         this.dbConnector = dbConnector;
     }
 
-    public void insertSQLStatement(String sqlString, int questionId) throws SQLException {
-        try {
-            dbConnector.setAutoCommit(false);
-            long startTime = System.currentTimeMillis();
-            System.out.println("Creating parsing tree: ");
-            // create a char stream from sql command
-            CharStream input = CharStreams.fromString(sqlString);
-            // create a lexer that feeds off of input CharStream
-            PostgreSQLLexer lexer = new PostgreSQLLexer(input);
-            // create a buffer of tokens pulled from the lexer
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            // create a parser that feeds off the tokens buffer
-            PostgreSQLParser parser = new PostgreSQLParser(tokens);
-
-            //parser.removeErrorListeners();
-            //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-            //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
-
-            // begin parsing at root rule
-            ParseTree tree = parser.root();
-
-            long endTime = System.currentTimeMillis();
-            System.out.println("Time elapsed(Creating parsing tree): " + (endTime - startTime) + "ms");
-
-            // insert sql command into database
-            System.out.println("   Inserting SQL command into database: " + sqlString);
-            startTime = System.currentTimeMillis();
-            int sqlId = dbConnector.insertSQLStatement(sqlString, questionId);
-            endTime = System.currentTimeMillis();
-            System.out.println("Time elapsed(Inserting SQL command into database): " + (endTime - startTime) + "ms");
-            // insert returned tree into database
-
-            System.out.println("getting paths");
-            startTime = System.currentTimeMillis();
-            MyCustomVisitorNDB visitor = new MyCustomVisitorNDB();
-
-            var paths = visitor.collectPaths(tree, true);
-            endTime = System.currentTimeMillis();
-            System.out.println("Time elapsed(getting paths): " + (endTime - startTime) + "ms");
-
-
-            System.out.println("Inserting paths into database");
-            startTime = System.currentTimeMillis();
-            dbConnector.insertPaths(paths, sqlId);
-            endTime = System.currentTimeMillis();
-            System.out.println("Time elapsed(Inserting paths into database): " + (endTime - startTime) + "ms");
-
-            dbConnector.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                dbConnector.rollback();
-            } catch (SQLException rollbackException) {
-                rollbackException.printStackTrace();
-            }
-            throw e;
-        } finally {
-            try {
-                dbConnector.setAutoCommit(true);
-            } catch (SQLException autoCommitException) {
-                autoCommitException.printStackTrace();
-            }
-        }
-    }
-
     public void insertSQLStatementDB(String sqlString, int questionId, boolean useIdentifiers) throws SQLException {
         try {
 
@@ -103,10 +38,6 @@ public class SqlCommandService {
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             // create a parser that feeds off the tokens buffer
             PostgreSQLParser parser = new PostgreSQLParser(tokens);
-
-            //parser.removeErrorListeners();
-            //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-            //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
             // begin parsing at root rule
             ParseTree tree = parser.root();
@@ -140,6 +71,7 @@ public class SqlCommandService {
         }
     }
 
+    // Outdated method that calculates the jaccard simularity in this application and not in database
     public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatements(String sqlString) {
         List<Map.Entry<SqlStatement, Double>> similarStatements = new ArrayList<>();
 
@@ -151,10 +83,6 @@ public class SqlCommandService {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         // create a parser that feeds off the tokens buffer
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
-
-        //parser.removeErrorListeners();
-        //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-        //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
         try {
             // begin parsing at root rule
@@ -186,6 +114,8 @@ public class SqlCommandService {
         return similarStatements.subList(0, numberOfElementsToRetrieve);
     }
 
+    // This method is used to find similar SQL statements in the database.
+    // Also calculates the Jaccard similarity between the SQL statements in database.
     public List<Map.Entry<SqlStatement, Double>> findSimilarSQLStatementsInDB(String sqlString, boolean useIdentifiers) throws Exception {
 
         // create a char stream from sql command
@@ -196,10 +126,6 @@ public class SqlCommandService {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         // create a parser that feeds off the tokens buffer
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
-
-        //parser.removeErrorListeners();
-        //parser.addErrorListener(new LexerDispatchingErrorListener(lexer));
-        //parser.addErrorListener(new ParserDispatchingErrorListener(parser));
 
         // begin parsing at root rule
         ParseTree tree = parser.root();

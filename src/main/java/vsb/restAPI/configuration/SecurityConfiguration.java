@@ -23,7 +23,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .anyRequest().permitAll()
             .and()
             .httpBasic()
-            .and().csrf().disable().headers().frameOptions().disable() // Přidat tento řádek
+            .and().csrf().disable().headers().frameOptions().disable()
                 .and();
     }
 

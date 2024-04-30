@@ -9,14 +9,13 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.*;
 import vsb.database.DBConnector;
 
+// Outdated version of class MyCustomVisitorNDB, that is trying to find ids of paths in the database during the collection process
 public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
 
     private final DBConnector dbConnector = new DBConnector();
     private int sqlId;
 
-    public MyCustomVisitor(int sqlId)
-    {
-        System.out.println("choice vytvari dbconnector");
+    public MyCustomVisitor(int sqlId) {
         this.sqlId = sqlId;
     }
 
@@ -31,14 +30,14 @@ public class MyCustomVisitor extends PostgreSQLParserBaseVisitor<Void> {
     }
 
     private void collectPath(ParseTree tree, List<String> path) throws SQLException {
-        if (tree instanceof ParserRuleContext ctx) {
-            String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Získání názvu pravidla
+        if (tree instanceof ParserRuleContext ctx) { // Check if the node is a parser rule context
+            String ruleName = PostgreSQLParser.ruleNames[ctx.getRuleIndex()]; // Get name of the rule
 
             int ruleId = dbConnector.insertTermIfNotExists(ruleName);
             if (ruleId != -1) {
                 path.add(Integer.toString(ruleId));
             }
-        } else if (tree instanceof TerminalNode) { // Kontrola, zda je uzel terminál
+        } else if (tree instanceof TerminalNode) { // Check if the node is a terminal node
             Token token = ((TerminalNode) tree).getSymbol();
             if (token.getType() != Token.EOF) {
                 int tokenId = dbConnector.insertTermIfNotExists(token.getText());
